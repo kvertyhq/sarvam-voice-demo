@@ -1,2 +1,2 @@
-# sarvam-voice-demo
-Sarvam AI Voice Agent demo app
+# retell-voice-demo
+Retell AI Voice Agent demo app
