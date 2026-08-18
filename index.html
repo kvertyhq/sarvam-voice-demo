@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Live Testing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #09090b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #a1a1aa;
+            --accent-primary: #6359C4;
+            --accent-secondary: #463e90;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--primary-bg);
+            background-image:
+                radial-gradient(at 100% 100%, rgba(99, 89, 196, 0.15) 0, transparent 50%),
+                radial-gradient(at 0% 0%, rgba(70, 62, 144, 0.15) 0, transparent 50%);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            animation: float 15s infinite alternate ease-in-out;
+        }
+
+        .orb-left {
+            width: 500px;
+            height: 500px;
+            background: rgba(99, 89, 196, 0.15);
+            top: -100px;
+            left: -150px;
+        }
+
+        .orb-right {
+            width: 400px;
+            height: 400px;
+            background: rgba(99, 89, 196, 0.1);
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
+        }
+
+        .glass-panel {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 45px 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .demo-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(99, 89, 196, 0.5);
+            box-shadow: 0 0 0 4px rgba(99, 89, 196, 0.15);
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-hint svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(99, 89, 196, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 89, 196, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        #widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        @media (max-width: 600px) {
+            .glass-panel {
+                padding: 35px 25px;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-orb orb-left"></div>
+    <div class="ambient-orb orb-right"></div>
+
+    <div class="glass-panel">
+        <div class="header">
+            <span class="demo-tag">KVERTY</span>
+            <h1>Live Agent Testing</h1>
+            <p>Input your Retell AI credentials below to initialize your web agent.</p>
+        </div>
+
+        <div class="input-group">
+            <label>Agent ID</label>
+            <input type="text" id="re-agent-id" placeholder="e.g., agent_3bed6bc6..." autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label>API Key (Secret Key)</label>
+            <input type="password" id="re-api-key" placeholder="Enter your Retell API Key" autocomplete="off">
+            <div class="input-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Required to authenticate the Live Voice Call. Found in Retell Dashboard -> API Keys.
+            </div>
+        </div>
+
+        <button class="action-btn" id="call-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                </path>
+            </svg>
+            Connect & Start Call
+        </button>
+
+        <div id="status-box" class="status-message"></div>
+    </div>
+
+    <!-- Holds the pulsing orb when the agent speaks -->
+    <div id="active-call-ui"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 5; background: radial-gradient(circle at center, rgba(99, 89, 196, 0.15) 0%, transparent 60%); transition: opacity 0.3s;">
+    </div>
+
+    <script type="module">
+        import { RetellWebClient } from "https://esm.sh/retell-client-js-sdk@2.0.8";
+
+        const retellWebClient = new RetellWebClient();
+        let isCalling = false;
+
+        const callBtn = document.getElementById('call-btn');
+        const statusBox = document.getElementById('status-box');
+        const activeUI = document.getElementById('active-call-ui');
+
+        // Helper function to show messages to the user
+        function showMessage(msg, isError = false) {
+            statusBox.textContent = msg;
+            statusBox.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+            statusBox.style.display = 'block';
+        }
+
+        // Helper function to reset the call button UI
+        function resetButton() {
+            callBtn.style.background = 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)';
+            callBtn.style.boxShadow = '0 4px 15px rgba(99, 89, 196, 0.3)';
+            callBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Connect & Start Call`;
+        }
+
+        // Main event listener for the call button
+        callBtn.addEventListener('click', async () => {
+            if (isCalling) {
+                retellWebClient.stopCall();
+                return;
+            }
+
+            const agentId = document.getElementById('re-agent-id').value.trim();
+            const apiKey = document.getElementById('re-api-key').value.trim();
+
+            if (!agentId || !apiKey) {
+                showMessage('Please enter both Agent ID and API Key.', true);
+                return;
+            }
+
+            showMessage('Requesting microphone access & connecting...', false);
+            callBtn.innerHTML = `Connecting...`;
+
+            try {
+                // 1. Authenticate and create the web call session via Retell API
+                // Note: In a real production app, this API call should happen on a secure backend server!
+                // We are doing it on the client here purely for educational/demonstration purposes.
+                const response = await fetch('https://api.retellai.com/v2/create-web-call', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ agent_id: agentId })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.message || 'Failed to authenticate call. Check API Key.');
+                }
+
+                const data = await response.json();
+
+                // 2. Start the call using the access token and the WebClient SDK
+                await retellWebClient.startCall({
+                    accessToken: data.access_token
+                });
+
+            } catch (error) {
+                showMessage(error.message, true);
+                resetButton();
+                console.error("Call Setup Error:", error);
+            }
+        });
+
+        // Event listeners for the Retell SDK Call Lifecycle
+        retellWebClient.on("call_started", () => {
+            isCalling = true;
+            showMessage('Call Active. Speak into your microphone!', false);
+
+            // Switch button to End Call state (Red)
+            callBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)';
+            callBtn.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
+            callBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23"></line></svg> End Call`;
+        });
+
+        retellWebClient.on("call_ended", () => {
+            isCalling = false;
+            activeUI.style.display = 'none';
+            showMessage('Call ended successfully.', false);
+            resetButton();
+        });
+
+        // Add a nice visual pulse when the AI is speaking!
+        retellWebClient.on("agent_start_talking", () => {
+            activeUI.style.display = 'block';
+        });
+
+        retellWebClient.on("agent_stop_talking", () => {
+            activeUI.style.display = 'none';
+        });
+
+        retellWebClient.on("error", (error) => {
+            showMessage("Network/Socket Error: Please run this file locally outside the Canvas preview.", true);
+            console.error("Retell SDK Error:", error);
+            retellWebClient.stopCall();
+            resetButton();
+            isCalling = false;
+        });
+    </script>
+</body>
+
+</html>
